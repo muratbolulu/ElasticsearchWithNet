@@ -3,7 +3,6 @@ using Elasticsearch.Api.Models;
 using Elasticsearch.Api.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Nest;
 using System.Collections.Immutable;
 
 namespace Elasticsearch.Api.Controllers

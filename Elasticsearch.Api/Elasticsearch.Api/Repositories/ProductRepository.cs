@@ -1,16 +1,17 @@
-﻿using Elasticsearch.Api.DTOs;
+﻿using Elastic.Clients.Elasticsearch;
+using Elastic.Clients.Elasticsearch.QueryDsl;
+using Elasticsearch.Api.DTOs;
 using Elasticsearch.Api.Models;
-using Nest;
 using System.Collections.Immutable;
-
+ 
 namespace Elasticsearch.Api.Repositories
 {
     public class ProductRepository
     {
-        private readonly ElasticClient _client;
+        private readonly ElasticsearchClient _client;
         private const string indexName = "products";
 
-        public ProductRepository(ElasticClient client)
+        public ProductRepository(ElasticsearchClient client)
         {
             _client = client;
         }
@@ -24,7 +25,7 @@ namespace Elasticsearch.Api.Repositories
             //var response = await _client.IndexAsync(newProduct, x => x.Index("indexName"));
 
             // client code fast fail. good.
-            if (!response.IsValid) return null;
+            if (!response.IsSuccess()) return null;
 
             newProduct.Id = response.Id;
 
@@ -35,8 +36,9 @@ namespace Elasticsearch.Api.Repositories
 
         public async Task<ImmutableList<Product>> GetAllAsync()
         {
-            var result = await _client.SearchAsync<Product>(s => s.Index(indexName)
-                            .Query(q => q.MatchAll()));
+            var result = await _client.SearchAsync<Product>(s => s.Index(indexName)); // matchAll hata verdi, kontrol et burayı?? 
+                            //.Query(q => q.MatchAll()));
+
 
             foreach (var hit in result.Hits)
             {
@@ -50,7 +52,7 @@ namespace Elasticsearch.Api.Repositories
         {
             var result = await _client.GetAsync<Product>(id, s => s.Index(indexName));
 
-            if (!result.IsValid)
+            if (!result.IsSuccess())
             {
                 return null;
             }
@@ -62,9 +64,10 @@ namespace Elasticsearch.Api.Repositories
 
         public async Task<bool> UpdateAsync(ProductUpdateDto updateProduct)
         {
-            var result = await _client.UpdateAsync<Product, ProductUpdateDto>(updateProduct.Id, x => x.Index(indexName).Doc(updateProduct));
+            //var result = await _client.UpdateAsync<Product, ProductUpdateDto>(updateProduct.Id, x => x.Index(indexName).Doc(updateProduct));
+            var result = await _client.UpdateAsync<Product, ProductUpdateDto>(indexName,updateProduct.Id, x => x.Doc(updateProduct));
             
-            return result.IsValid;
+            return result.IsSuccess();
         }
 
         public async Task<DeleteResponse> DeleteAsync(string id)

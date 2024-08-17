@@ -1,7 +1,8 @@
-﻿using Elasticsearch.Api.DTOs;
+﻿using Elastic.Clients.Elasticsearch;
+using Elasticsearch.Api.DTOs;
 using Elasticsearch.Api.Models;
 using Elasticsearch.Api.Repositories;
-using Nest;
+using System;
 using System.Collections.Immutable;
 using System.Net;
 
@@ -33,16 +34,6 @@ namespace Elasticsearch.Api.Services
         {
             var products = await _repository.GetAllAsync();
             var productListDto = new List<ProductDto>();
-            //var productListDto = products.Select(x => new ProductDto(
-            //    x.Id, 
-            //    x.Name, 
-            //    x.Price, 
-            //    x.Stock, 
-            //    new (
-            //        x.Feature.Width,
-            //        x.Feature.Height,
-            //        x.Feature.Color)))
-            //    .ToList();
 
             foreach (var x in products)
             {
@@ -58,7 +49,6 @@ namespace Elasticsearch.Api.Services
                         x.Feature!.Color.ToString())
                         ));
             }
-
 
             return ResponseDto<List<ProductDto>>.Success(productListDto, HttpStatusCode.OK);
         }
@@ -92,15 +82,16 @@ namespace Elasticsearch.Api.Services
         {
             var deleteResponse= await _repository.DeleteAsync(id);
 
-            if (!deleteResponse.IsValid && deleteResponse.Result==Result.NotFound)
+            if (!deleteResponse.IsValidResponse && deleteResponse.Result==Result.NotFound)
             {
                 return ResponseDto<bool>.Fail(new List<string> { "Silmeye çalıştığınız ürün bulunamamıştır" }, HttpStatusCode.NotFound);
             }
 
 
-            if (!deleteResponse.IsValid)
+            if (!deleteResponse.IsValidResponse)
             {
-                _logger.LogError(deleteResponse.OriginalException, deleteResponse.ServerError.ToString()); //for developer
+                deleteResponse.TryGetOriginalException(out Exception? exception);
+                _logger.LogError(exception, deleteResponse.ElasticsearchServerError?.Error.ToString()); //for developer
                 return ResponseDto<bool>.Fail(new List<string> { "Silme esnasında hata meydana geldi." }, HttpStatusCode.InternalServerError);
             }
 

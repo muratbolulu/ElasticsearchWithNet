@@ -1,5 +1,5 @@
-﻿using Elasticsearch.Net;
-using Nest;
+﻿using Elastic.Clients.Elasticsearch;
+using Elastic.Transport;
 
 namespace Elasticsearch.Api.Extansions
 {
@@ -7,11 +7,11 @@ namespace Elasticsearch.Api.Extansions
     {
         public static void AddElastic(this IServiceCollection services, IConfiguration configuration)
         {
-            //program.cs kirletmemek için buraya taşıdık.
-            var pool = new SingleNodeConnectionPool(new Uri(configuration.GetSection("Elastic")["Uri"]!)); // ! Uri olmayabilir diyordu, biz işaretledik var diye.
-            var settings = new ConnectionSettings(pool);
-            var client = new ElasticClient(settings);
-            //elastic ve redis kendi dökümanlarında singletion belirtir. //efcore scoped. //elastic threadsafe dir. //dbcontext threadsafe değildir. farklı thread den okuyamazsın. 
+            var userName = configuration.GetSection("Elastic")["Username"];
+            var password = configuration.GetSection("Elastic")["Password"];
+            var settings = new ElasticsearchClientSettings(new Uri(configuration.GetSection("Elastic")["Uri"]!))
+                                           .Authentication(new BasicAuthentication(userName!,password!));
+            var client = new ElasticsearchClient(settings);
             services.AddSingleton(client);
         }
     }
