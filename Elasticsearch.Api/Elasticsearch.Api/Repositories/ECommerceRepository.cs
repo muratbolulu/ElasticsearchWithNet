@@ -283,12 +283,12 @@ namespace Elasticsearch.Api.Repositories
             //    .Size(1000)
             //      .Query(q => q
             //          .Bool(b => b
-            //              .Should(s=>s  //aşağıdaki match ve ya prefix ten şartı sağlayanları should olduğundan getirir.
-            //                .Match(ma=>ma //fulltextquery  -- 1e1 eşleşenleri getirir.
-            //                   .Field(f=>f.CustomerFullName)
-            //                   .Query(customerFullName))
-            //                .Prefix(p=>p //prefix inde eşleşenleri getirir.
-            //                  .Field(ff=>ff.CustomerFullName.Suffix("keyword"))  //term level query -- term level query ler full text üzerinden sorgulama yapmaz. keyword kullanılır.
+            //              .Should(  //aşağıdaki match ve ya prefix ten şartı sağlayanları should olduğundan getirir.
+            //                s => s.Match(ma => ma //fulltextquery  -- 1e1 eşleşenleri getirir.
+            //                   .Field(f => f.CustomerFullName)
+            //                   .Query(customerFullName)),
+            //                s => s.Prefix(p => p //prefix inde eşleşenleri getirir.
+            //                  .Field(ff => ff.CustomerFullName.Suffix("keyword"))  //term level query -- term level query ler full text üzerinden sorgulama yapmaz. keyword kullanılır.
             //                  .Value(customerFullName))))));
 
             //yukarıda sorgunun aynısındır.
